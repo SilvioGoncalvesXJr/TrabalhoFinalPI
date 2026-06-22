@@ -46,31 +46,39 @@ def otsu_threshold(image: np.ndarray) -> float:
     return best_thresh / 255.0
 
 
-def _erode(image: np.ndarray, kernel_size: int = 3) -> np.ndarray:
-    """Erosão binária manual."""
+def _erode(image: np.ndarray) -> np.ndarray:
+    """Erosão binária manual com elemento estruturante em cruz."""
+    # Elemento estruturante cruz (3x3)
+    se = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.uint8)
     H, W = image.shape
-    pad = kernel_size // 2
+    pad = 1
     padded = np.pad(image, pad, mode="constant")
     output = np.zeros_like(image)
 
     for i in range(H):
         for j in range(W):
-            region = padded[i:i+kernel_size, j:j+kernel_size]
-            output[i, j] = 1 if np.all(region == 1) else 0
+            region = padded[i:i+3, j:j+3]
+            # Aplicar SE: verificar se todos os pixels do SE em região são 1
+            masked = region * se
+            output[i, j] = 1 if np.all(masked == se) else 0
     return output
 
 
-def _dilate(image: np.ndarray, kernel_size: int = 3) -> np.ndarray:
-    """Dilatação binária manual."""
+def _dilate(image: np.ndarray) -> np.ndarray:
+    """Dilatação binária manual com elemento estruturante em cruz."""
+    # Elemento estruturante cruz (3x3)
+    se = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.uint8)
     H, W = image.shape
-    pad = kernel_size // 2
+    pad = 1
     padded = np.pad(image, pad, mode="constant")
     output = np.zeros_like(image)
 
     for i in range(H):
         for j in range(W):
-            region = padded[i:i+kernel_size, j:j+kernel_size]
-            output[i, j] = 1 if np.any(region == 1) else 0
+            region = padded[i:i+3, j:j+3]
+            # Aplicar SE: verificar se pelo menos um pixel do SE em região é 1
+            masked = region * se
+            output[i, j] = 1 if np.any(masked == 1) else 0
     return output
 
 

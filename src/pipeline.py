@@ -12,6 +12,7 @@ from .preprocessing import to_grayscale, normalize, gaussian_filter, equalize_hi
 from .transforms import sobel_filter, log_filter, dct_blocks
 from .segmentation import otsu_threshold, morphological_open_close, calculate_iou, load_trimap
 from .descriptors import extract_all
+from . import classification
 
 # Configurar logging
 logging.basicConfig(
@@ -131,6 +132,11 @@ def main():
 
     # Salvar outras visualizações (histogramas RGB, LBP, DCT)
     save_other_visuals(df, "outputs/visuals")
+
+    # ETAPA 2: Classificação
+    logger.info("=== INICIANDO ETAPA 2: CLASSIFICAÇÃO ===")
+    classification.run_classification_pipeline()
+    logger.info("=== PIPELINE COMPLETO ===")
 
 
 def save_visualization(rgb, gray, filtered, sobel, mask, img_path, out_dir):
