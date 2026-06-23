@@ -5,6 +5,7 @@ import seaborn as sns
 import logging
 import joblib
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score, GridSearchCV
@@ -57,6 +58,15 @@ def run_classification_pipeline():
     joblib.dump(scaler, "outputs/models/scaler.pkl")
     logger.info("Scaler salvo em outputs/models/scaler.pkl")
 
+    # Seleção de Features (SelectKBest com f_classif)
+    logger.info("=== SELECIONANDO MELHORES FEATURES ===")
+    k_best = 50  # Seleciona as 50 melhores features
+    selector = SelectKBest(f_classif, k=k_best)
+    X_train_selected = selector.fit_transform(X_train_scaled, y_train)
+    X_test_selected = selector.transform(X_test_scaled)
+    joblib.dump(selector, "outputs/models/selector.pkl")
+    logger.info(f"Features reduzidas de {X_train_scaled.shape[1]} para {X_train_selected.shape[1]}")
+
     # KNN
     logger.info("=== TREINANDO KNN ===")
     k_values = [1, 3, 5, 7, 9, 11, 15]
@@ -65,7 +75,7 @@ def run_classification_pipeline():
     for k in k_values:
         knn = KNeighborsClassifier(n_neighbors=k, metric="euclidean")
         scores = cross_val_score(
-            knn, X_train_scaled, y_train, cv=5, scoring="accuracy", n_jobs=-1
+            knn, X_train_selected, y_train, cv=5, scoring="accuracy", n_jobs=-1
         )
         knn_cv_scores[k] = {
             "mean_accuracy": scores.mean(),
@@ -78,15 +88,15 @@ def run_classification_pipeline():
 
     best_k = max(knn_cv_scores, key=lambda k: knn_cv_scores[k]["mean_accuracy"])
     knn_best = KNeighborsClassifier(n_neighbors=best_k, metric="euclidean")
-    knn_best.fit(X_train_scaled, y_train)
+    knn_best.fit(X_train_selected, y_train)
     joblib.dump(knn_best, "outputs/models/knn_best.pkl")
     logger.info(f"[KNN] Melhor K={best_k} | Modelo salvo")
 
     # SVM
     logger.info("=== TREINANDO SVM COM GRIDSEARCH ===")
     param_grid = {
-        "C": [0.1, 1, 10, 100],
-        "gamma": ["scale", "auto", 0.001, 0.01, 0.1],
+        "C": [0.01, 0.1, 1, 10, 100, 1000],  # Mais valores de C
+        "gamma": ["scale", "auto", 0.0001, 0.001, 0.01, 0.1, 1],  # Mais valores de gamma
         "kernel": ["rbf"]
     }
 
@@ -100,7 +110,7 @@ def run_classification_pipeline():
         verbose=1,
         refit=True
     )
-    grid_search.fit(X_train_scaled, y_train)
+    grid_search.fit(X_train_selected, y_train)
 
     svm_best = grid_search.best_estimator_
     logger.info(f"[SVM] Melhores hiperparâmetros: {grid_search.best_params_}")
@@ -116,10 +126,10 @@ def run_classification_pipeline():
     # Avaliação final
     logger.info("=== AVALIAÇÃO NO CONJUNTO DE TESTE ===")
     results_knn = evaluate_model(
-        knn_best, X_test_scaled, y_test, "KNN", breeds
+        knn_best, X_test_selected, y_test, "KNN", breeds
     )
     results_svm = evaluate_model(
-        svm_best, X_test_scaled, y_test, "SVM", breeds
+        svm_best, X_test_selected, y_test, "SVM", breeds
     )
 
     # Comparação final
@@ -136,7 +146,7 @@ def run_classification_pipeline():
     _plot_model_comparison(comparison)
 
     # Análise de erros
-    y_pred_svm = svm_best.predict(X_test_scaled)
+    y_pred_svm = svm_best.predict(X_test_selected)
     errors_idx = np.where(y_pred_svm != y_test)[0]
     error_df = pd.DataFrame({
         "image_path": X_test_paths[errors_idx],
