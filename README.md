@@ -42,3 +42,7 @@ outputs/visuals/                       — todas as figuras para o artigo
 ## Dataset
 Oxford-IIIT Pet — CC BY-SA 4.0
 https://www.robots.ox.ac.uk/~vgg/data/pets/
+
+Download direto:
+- https://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz
+- https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz
