@@ -8,11 +8,16 @@ from tqdm import tqdm
 from pathlib import Path
 
 from .loader import load_dataset, CAT_BREEDS
-from .preprocessing import to_grayscale, normalize, gaussian_filter, equalize_histogram
+from .preprocessing import to_grayscale, normalize, gaussian_filter, equalize_histogram, resize_mask, resize_rgb
 from .transforms import sobel_filter, log_filter, dct_blocks
 from .segmentation import otsu_threshold, morphological_open_close, calculate_iou, load_trimap
 from .descriptors import extract_all
 from . import classification
+
+# Criar pastas para salvar features
+Path("outputs/features").mkdir(parents=True, exist_ok=True)
+Path("outputs/visuals").mkdir(parents=True, exist_ok=True)
+Path("outputs/stats").mkdir(parents=True, exist_ok=True)
 
 # Configurar logging
 logging.basicConfig(
@@ -32,6 +37,18 @@ np.random.seed(SEED)
 
 def main():
     data_dir = "data/oxford-iiit-pet"
+
+
+    features_file = Path("outputs/features/features.npz")
+
+    if features_file.exists():
+        logger.info("Features encontradas. Pulando processamento das imagens.")
+
+        classification.run_classification_pipeline()
+
+        logger.info("=== PIPELINE COMPLETO ===")
+        return
+
     df = load_dataset(data_dir)
 
     if len(df) == 0:
@@ -63,7 +80,7 @@ def main():
             img_rgb = img_bgr[:, :, ::-1]
 
             # Pré-processamento
-            img_resized = cv2.resize(img_rgb, (128, 128))
+            img_resized = resize_rgb(img_rgb, (128, 128))
             img_gray = to_grayscale(img_resized)
             img_norm = normalize(img_gray)
             img_filtered = gaussian_filter(img_norm)
@@ -71,7 +88,7 @@ def main():
 
             # Transformações
             sobel_mag, _ = sobel_filter(img_equalized)
-            log_edges = log_filter(img_equalized)
+            # log_edges = log_filter(img_equalized)
             dct_blks = dct_blocks(img_equalized)
 
             # Segmentação
@@ -85,7 +102,7 @@ def main():
             trimap_path = Path(data_dir) / "annotations" / "trimaps" / f"{img_name}.png"
             if trimap_path.exists():
                 true_mask = load_trimap(str(trimap_path))
-                true_mask_resized = cv2.resize(true_mask, (128, 128), interpolation=cv2.INTER_NEAREST)
+                true_mask_resized = resize_mask(true_mask, (128, 128))
                 iou = calculate_iou(clean_mask, true_mask_resized.astype(np.uint8))
                 breed_iou_dict[row["breed_name"]].append(iou)
 
