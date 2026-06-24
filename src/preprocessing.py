@@ -64,7 +64,7 @@ def _create_gaussian_kernel(kernel_size: int = 5, sigma: float = 1.0) -> np.ndar
 
 
 def _convolve_2d(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
-    """Aplica convolução 2D manualmente."""
+    """Aplica convolução 2D."""
     H, W = image.shape
     kH, kW = kernel.shape
     pad_h = kH // 2
@@ -83,7 +83,7 @@ def _convolve_2d(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
 
 def gaussian_filter(image: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     """
-    Aplica filtro gaussiano manualmente via convolução 2D com NumPy.
+    Aplica filtro gaussiano via convolução 2D com NumPy.
 
     Parâmetros
     ----------
@@ -103,7 +103,7 @@ def gaussian_filter(image: np.ndarray, sigma: float = 1.0) -> np.ndarray:
 
 def equalize_histogram(image: np.ndarray) -> np.ndarray:
     """
-    Aplica equalização de histograma manualmente em uma imagem grayscale.
+    Aplica equalização de histograma em uma imagem grayscale.
 
     Parâmetros
     ----------
@@ -121,3 +121,29 @@ def equalize_histogram(image: np.ndarray) -> np.ndarray:
     cdf_normalized = (cdf - cdf.min()) / (cdf.max() - cdf.min())
     img_equalized = cdf_normalized[img_uint8]
     return img_equalized.astype(np.float64)
+
+
+def resize_rgb(image: np.ndarray, output_shape=(128, 128)) -> np.ndarray:
+    """
+    Redimensiona uma imagem colorida (RGB/BGR) usando o método do Vizinho Próximo.
+    """
+    h_out, w_out = output_shape
+    h_in, w_in, c_in = image.shape
+    
+    row_indices = np.clip((np.arange(h_out) * (h_in / h_out)).astype(np.int32), 0, h_in - 1)
+    col_indices = np.clip((np.arange(w_out) * (w_in / w_out)).astype(np.int32), 0, w_in - 1)
+    
+    return image[np.ix_(row_indices, col_indices)]
+
+
+def resize_mask(mask: np.ndarray, output_shape=(128, 128)) -> np.ndarray:
+    """
+    Redimensiona uma máscara ou imagem em escala de cinza (2D) usando o método do Vizinho Próximo.
+    """
+    h_out, w_out = output_shape
+    h_in, w_in = mask.shape[:2]
+    
+    row_indices = np.clip((np.arange(h_out) * (h_in / h_out)).astype(np.int32), 0, h_in - 1)
+    col_indices = np.clip((np.arange(w_out) * (w_in / w_out)).astype(np.int32), 0, w_in - 1)
+    
+    return mask[np.ix_(row_indices, col_indices)]
