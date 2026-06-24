@@ -2,6 +2,7 @@ import numpy as np
 import logging
 import cv2
 from pathlib import Path
+from .preprocessing import to_grayscale
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +139,13 @@ def load_trimap(trimap_path: str) -> np.ndarray:
     np.ndarray
         Máscara binária (1 = foreground, 0 = background).
     """
-    trimap = cv2.imread(trimap_path, cv2.IMREAD_GRAYSCALE)
+    trimap_bgr = cv2.imread(trimap_path)
+    if trimap_bgr is None:
+        raise FileNotFoundError(f"Não foi possível carregar o trimap: {trimap_path}")
+
+    trimap_gray = to_grayscale(trimap_bgr[:, :, ::-1])
+    trimap = np.round(trimap_gray).astype(np.uint8)
+
     mask = np.zeros_like(trimap)
     mask[trimap == 1] = 1
     return mask.astype(np.float64)

@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
 import joblib
+from pathlib import Path
+from .preprocessing import resize_rgb
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.neighbors import KNeighborsClassifier
@@ -33,6 +35,10 @@ def run_classification_pipeline():
     -------
     Nenhum
     """
+
+    Path("outputs/models").mkdir(parents=True, exist_ok=True)
+    Path("outputs/results").mkdir(parents=True, exist_ok=True)
+
     logger.info("=== CARREGANDO FEATURES ===")
     data = np.load("outputs/features/features.npz", allow_pickle=True)
     X = data["X"]
@@ -338,7 +344,7 @@ def _plot_error_analysis(error_df: pd.DataFrame, breeds: np.ndarray, error_paths
             axes[i].axis("off")
             continue
         img_rgb = img_bgr[:, :, ::-1]
-        img_rgb = cv2.resize(img_rgb, (128, 128))
+        img_rgb = resize_rgb(img_rgb, (128, 128))
         axes[i].imshow(img_rgb)
         axes[i].set_title(f"Real: {row['true_breed']}\nPredito: {row['predicted']}", fontsize=10)
         axes[i].axis("off")
@@ -351,5 +357,8 @@ def _plot_error_analysis(error_df: pd.DataFrame, breeds: np.ndarray, error_paths
     plt.close()
 
 
-# Import cv2 para o _plot_error_analysis (apenas para leitura e resize)
+# Import cv2 para o _plot_error_analysis (apenas para leitura)
 import cv2
+
+if __name__ == "__main__":
+    run_classification_pipeline()
