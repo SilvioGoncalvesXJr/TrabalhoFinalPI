@@ -1,10 +1,10 @@
 # Cat Breed Classifier — Pipeline Completo
 
-Projeto acadêmico de Processamento de Imagens (PI).
-
-O objetivo é desenvolver um pipeline completo de visão computacional para classificação de **12 raças de gatos** utilizando o dataset **Oxford-IIIT Pet Dataset**.
+Este repositório contém o projeto aplicado de Processamento de Imagens (PI) desenvolvido como o Trabalho Final da disciplina. O objetivo é desenvolver um pipeline completo de visão computacional para classificação de **12 raças de gatos** utilizando o dataset **Oxford-IIIT Pet Dataset**.
 
 O projeto aplica técnicas clássicas de processamento digital de imagens implementadas manualmente com NumPy, realizando pré-processamento, transformações espaciais e no domínio da frequência, segmentação, extração de descritores e classificação utilizando Machine Learning.
+
+Tema Selecionado: Animais e Natureza — Gatos
 
 ---
 
@@ -23,11 +23,13 @@ O pipeline foi desenvolvido seguindo os requisitos da disciplina, priorizando a 
 
 # Dataset
 
-Dataset utilizado:
+Dataset utilizado: **Oxford-IIIT Pet Dataset**
 
-**Oxford-IIIT Pet Dataset**
+Oxford-IIIT Pet — CC BY-SA 4.0 https://www.robots.ox.ac.uk/~vgg/data/pets/
 
-Tema: Animais e Natureza — Gatos
+Download direto:
+https://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz
+https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz
 
 Licença: 
 ```
@@ -94,9 +96,7 @@ Todas as etapas principais de processamento foram implementadas manualmente util
   - Gradiente horizontal;
   - Gradiente vertical;
   - Magnitude da borda.
-
 - Filtro LoG (Laplaciano do Gaussiano);
-
 - DCT-II em blocos 8×8 para análise no domínio da frequência.
 
 ## Segmentação
@@ -107,7 +107,6 @@ Todas as etapas principais de processamento foram implementadas manualmente util
   - Dilatação;
   - Abertura;
   - Fechamento.
-
 - Avaliação por IoU usando os trimaps do dataset.
 
 ## Descritores Extraídos
@@ -182,34 +181,60 @@ KNN / SVM
 
 ```
 TrabalhoFinalPI/
-
-├── data/
+├── data/                         # Subconjunto filtrado do dataset (Ignorado no Git)
 │   └── oxford-iiit-pet/
-│       ├── images/
-│       └── annotations/
-
-├── outputs/
-│   ├── features/
-│   ├── models/
-│   ├── results/
-│   └── visuals/
-
+│       ├── images/               # Fotos originais (.jpg)
+│       └── annotations/          # Trimaps e bounding boxes de referência
 ├── notebooks/
-│   ├── exploratory_analysis.ipynb
-
-├── src/
+│   └── exploratory_analysis.ipynb # Análise Exploratória de Dados (Parte A e Parte B)
+├── outputs/                      # Artefatos gerados automaticamente pelo pipeline
+│   ├── features/                 # Vetores de características salvos (.npz)
+│   ├── models/                   # Serialização dos modelos e scalers (.pkl)
+│   ├── results/                  # Tabelas comparativas e relatórios de métricas (.csv)
+│   └── visuals/                  # Gráficos de erro, heatmaps e matrizes de confusão (.png)
+├── src/                          # Código-fonte modularizado em Python
 │   ├── __init__.py
-│   ├── pipeline.py
-│   ├── loader.py
-│   ├── preprocessing.py
-│   ├── transforms.py
-│   ├── segmentation.py
-│   ├── descriptors.py
-│   └── classification.py
-
-├── requirements.txt
-└── README.md
+│   ├── app.py                    # Aplicação Web Interativa (Streamlit Dashboard)
+│   ├── pipeline.py               # Script principal (Orquestrador do Pipeline)
+│   ├── loader.py                 # Filtro, leitura e estruturação dos dados
+│   ├── preprocessing.py          # Operações espaciais manuais e realce
+│   ├── transforms.py             # Filtros de borda (Sobel, LoG) e domínio da frequência (DCT)
+│   ├── segmentation.py           # Otsu, Morfologia Binária e validação por IoU
+│   ├── classification.py         # Classificador com SVM e KNN
+│   └── descriptors.py            # Funções manuais de extração de características
+├── docs/
+│   └── artigo_pdi_sbc.pdf        # Relatório Científico Final no formato SBC
+├── requirements.txt              # Dependências e bibliotecas do ambiente
+└── README.md                     # Este arquivo de documentação
 ```
+
+---
+
+# Análise Exploratória de Dados (AED)
+O ciclo de análise de dados foi dividido em duas frentes complementares dentro do arquivo notebooks/exploratory_analysis.ipynb:
+
+## Parte A: Análise Pré-Pipeline (Dados Brutos)
+Estudo estatístico focado na consistência geométrica e na integridade das amostras originais:
+- Distribuição de frequência volumétrica das 12 raças de gatos para checagem de desbalanceamento de classes.
+- Mapeamento de dispersão dimensional (Largura $\times$ Altura) das imagens originais antes da padronização espacial.
+- Distribuição do balanço dos splits nativos de treino e teste.
+
+## Parte B: Análise Pós-Pipeline (Features Extraídas)
+Estudo sobre o comportamento matemático do vetor de 99 características gerado pelos módulos de PI:
+- Análise de relevância e variância dos bins dos histogramas de cor (HSV) e textura (LBP) entre diferentes raças.
+- Correlação linear entre os descritores de forma (área, perímetro, compacidade) e as classes.
+- Avaliação do comportamento da redução de dimensionalidade por variância (ANOVA) para a escolha das 50 melhores features que alimentam os classificadores.
+
+# Módulo Extra: Aplicação Web Interativa (Streamlit)
+Como um artefato funcional bônus, o projeto conta com uma interface gráfica para o usuário realizar testes preditivos em tempo real.
+
+## Funcionalidades:
+- Drag-and-drop para upload de imagens externas de felinos (.png, .jpg, .jpeg).
+- Renderização visual sequencial lado a lado: Original $\rightarrow$ Filtro Gaussiano $\rightarrow$ Bordas de Sobel $\rightarrow$ Máscara de Otsu $\rightarrow$ Segmentação Resultante.
+- Inferência instantânea carregando os modelos otimizados (svm_best.pkl) com exibição gráfica da distribuição de probabilidade por classe.
+
+## Demonstração Visual da Interface:
+<img width="1374" height="834" alt="Captura de Tela 2026-06-24 às 22 08 44" src="https://github.com/user-attachments/assets/93dc7fc9-e2e7-45db-9883-04e8c607a95a" />
 
 ---
 
@@ -240,7 +265,7 @@ pip install -r requirements.txt
 ---
 
 
-## Download
+## Download e Organização do Dataset
 
 Criar pasta:
 
@@ -275,7 +300,7 @@ data/oxford-iiit-pet/
 
 ---
 
-# Execução
+# Executar o Pipeline Principal (Treinamento e Extração)
 
 Criar diretórios de saída:
 
@@ -349,19 +374,26 @@ Inclui:
 
 ---
 
-## Dataset
-Oxford-IIIT Pet — CC BY-SA 4.0 https://www.robots.ox.ac.uk/~vgg/data/pets/
+# Executar a Aplicação Web (Streamlit)
 
-Download direto:
+Após a conclusão do pipeline (garantindo que os arquivos .pkl foram salvos em outputs/models/), inicialize o servidor do dashboard local com o comando:
 
-https://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz
-https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz
+```bash
+streamlit run src/app.py
+```
+
+O terminal exibirá um link local (geralmente http://localhost:8501). Abra-o no seu navegador para interagir com o sistema.
+
+---
+
+# Slides da Apresentação
+[Classificação Avançada de Raças de Gatos via Processamento Digital de Imagens e Aprendizado Visual.pdf](https://github.com/user-attachments/files/29316126/Classificacao.Avancada.de.Racas.de.Gatos.via.Processamento.Digital.de.Imagens.e.Aprendizado.Visual.pdf)
 
 ---
 
 # Equipe
 
-- Layza Carneiro
-- Pedro Nonato
-- Samuel Valente
-- Silvio Gonçalves
+- Layza Carneiro ✉️ E-mail: layza.carneiro@aluno.uece.br
+- Pedro Nonato ✉️ E-mail: pedro.nonato@aluno.uece.br
+- Samuel Valente ✉️ E-mail: samuel.valente@aluno.uece.br
+- Silvio Gonçalves ✉️ E-mail: silvio.goncalves@aluno.uece.br
