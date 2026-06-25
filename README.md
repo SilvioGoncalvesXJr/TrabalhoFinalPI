@@ -230,7 +230,7 @@ Como um artefato funcional bônus, o projeto conta com uma interface gráfica pa
 
 ## Funcionalidades:
 - Drag-and-drop para upload de imagens externas de felinos (.png, .jpg, .jpeg).
-- Renderização visual sequencial lado a lado: Original $\rightarrow$ Filtro Gaussiano $\rightarrow$ Bordas de Sobel $\rightarrow$ Máscara de Otsu $\rightarrow$ Segmentação Resultante.
+- Renderização visual sequencial lado a lado: Original -> Filtro Gaussiano -> Bordas de Sobel -> Máscara de Otsu -> Segmentação Resultante.
 - Inferência instantânea carregando os modelos otimizados (svm_best.pkl) com exibição gráfica da distribuição de probabilidade por classe.
 
 ## Demonstração Visual da Interface:
