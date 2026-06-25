@@ -386,11 +386,6 @@ O terminal exibirá um link local (geralmente http://localhost:8501). Abra-o no 
 
 ---
 
-# Slides da Apresentação
-[Classificação Avançada de Raças de Gatos via Processamento Digital de Imagens e Aprendizado Visual.pdf](https://github.com/user-attachments/files/29316126/Classificacao.Avancada.de.Racas.de.Gatos.via.Processamento.Digital.de.Imagens.e.Aprendizado.Visual.pdf)
-
----
-
 # Relatório Técnico (Artigo Científico)
 
 O embasamento teórico-conceitual, as formulações matemáticas detalhadas de cada operador implementado manualmente (como as matrizes convolucionais e os loops da DCT), além das análises quantitativas profundas e referências bibliográficas, encontram-se documentados no artigo científico final deste projeto:
